@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { CircleHelp, RefreshCw, ChevronDown, AlertCircle } from "lucide-react";
-import DateDisplay from "@/components/DateDisplay";
+import { CircleHelp, ChevronDown, AlertCircle } from "lucide-react";
 import RiddleCard from "@/components/RiddleCard";
 import EmptyState from "@/components/EmptyState";
 import { LoadingAnimation } from "@/components/LoadingAnimation";
@@ -139,7 +138,6 @@ export default function Home() {
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
-            <DateDisplay />
           </div>
         </div>
       </header>
