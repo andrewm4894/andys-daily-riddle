@@ -40,16 +40,14 @@ export default function RiddleCard({ riddle, isFeatured = false }: RiddleCardPro
             {riddle.question}
           </div>
           
-          <div 
-            className="mt-2" 
-            onClick={(e) => e.stopPropagation()}
-          >
-            <RatingStars 
-              averageRating={riddle.averageRating} 
-              ratingCount={riddle.ratingCount} 
-              readOnly={true}
-            />
-          </div>
+          {riddle.averageRating !== null && riddle.ratingCount > 0 && (
+            <div 
+              className="mt-2 text-xs text-gray-500" 
+              onClick={(e) => e.stopPropagation()}
+            >
+              {Number(riddle.averageRating).toFixed(1)} ({riddle.ratingCount})
+            </div>
+          )}
         </div>
         
         {/* Back of card - Answer */}
