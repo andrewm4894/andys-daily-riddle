@@ -31,7 +31,13 @@ export default function RatingStars({
   };
 
   return (
-    <div className="flex flex-col items-center gap-1">
+    <div className="flex items-center gap-2">
+      {averageRating !== undefined && averageRating !== null && ratingCount > 0 && (
+        <div className="text-xs text-gray-500 min-w-8 text-right">
+          {Number(averageRating).toFixed(1)}
+        </div>
+      )}
+      
       <div className="flex items-center space-x-1">
         {[1, 2, 3, 4, 5].map((rating) => (
           <Star
@@ -49,13 +55,13 @@ export default function RatingStars({
             onClick={() => handleRating(rating)}
           />
         ))}
+        
+        {averageRating !== undefined && averageRating !== null && ratingCount > 0 && (
+          <span className="text-xs text-gray-500 ml-1">
+            ({ratingCount})
+          </span>
+        )}
       </div>
-      
-      {averageRating !== undefined && averageRating !== null && ratingCount > 0 && (
-        <div className="text-xs text-gray-500">
-          {Number(averageRating).toFixed(1)} ({ratingCount})
-        </div>
-      )}
     </div>
   );
 }
