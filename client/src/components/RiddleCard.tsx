@@ -9,16 +9,19 @@ type RiddleCardProps = {
 
 export default function RiddleCard({ riddle, isFeatured = false }: RiddleCardProps) {
   const frontContent = (
-    <div className="p-5 h-full flex items-center justify-center">
-      <p className="text-gray-800 text-lg text-center w-full">
+    <div className="p-4 h-full flex items-center justify-center">
+      <p className="text-gray-800 text-base md:text-lg text-center w-full break-words">
         {riddle.question}
       </p>
+      <div className="text-gray-400 text-xs opacity-50 absolute bottom-2 right-3">
+        Tap to reveal
+      </div>
     </div>
   );
 
   const backContent = (
-    <div className="p-5 h-full flex items-center justify-center">
-      <p className="text-primary-700 font-medium text-lg text-center w-full">
+    <div className="p-4 h-full flex items-center justify-center">
+      <p className="text-primary-700 font-medium text-base md:text-lg text-center w-full break-words">
         {riddle.answer}
       </p>
     </div>
@@ -32,7 +35,7 @@ export default function RiddleCard({ riddle, isFeatured = false }: RiddleCardPro
       <CardFlip
         frontContent={frontContent}
         backContent={backContent}
-        className="min-h-[150px] cursor-pointer"
+        className="min-h-[120px] cursor-pointer"
       />
     </div>
   );

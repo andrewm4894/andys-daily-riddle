@@ -161,7 +161,7 @@ export default function Home() {
               </div>
             ) : (
               <>
-                <div className="space-y-4" ref={newRiddleRef}>
+                <div className="space-y-3" ref={newRiddleRef}>
                   {/* Show loading animation when generating a new riddle */}
                   {generateRiddle.isPending && (
                     <div className="mb-6 transform transition-all duration-300 ease-in-out">
