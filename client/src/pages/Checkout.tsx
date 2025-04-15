@@ -3,7 +3,7 @@ import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-
 import { loadStripe } from '@stripe/stripe-js';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
-import { useNavigate } from 'wouter';
+import { useLocation } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { LoadingAnimation } from '@/components/LoadingAnimation';
@@ -22,7 +22,7 @@ const CheckoutForm = () => {
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentError, setPaymentError] = useState('');
-  const navigate = useNavigate();
+  const [, setLocation] = useLocation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,7 +61,7 @@ const CheckoutForm = () => {
             description: "Your riddle has been generated!",
           });
           // Redirect to home page to see the new riddle
-          navigate('/');
+          setLocation('/');
         } else {
           const errorData = await response.json();
           throw new Error(errorData.message || 'Failed to generate riddle');

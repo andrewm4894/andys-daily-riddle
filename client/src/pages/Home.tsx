@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { CircleHelp, ChevronDown, AlertCircle } from "lucide-react";
+import { CircleHelp, ChevronDown, AlertCircle, CreditCard } from "lucide-react";
 import RiddleCard from "@/components/RiddleCard";
 import EmptyState from "@/components/EmptyState";
 import { LoadingAnimation } from "@/components/LoadingAnimation";
@@ -9,12 +9,14 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { type Riddle } from "@shared/schema";
+import { useLocation } from "wouter";
 
 export default function Home() {
   const [riddlesOffset, setRiddlesOffset] = useState(0);
   const [riddlesLimit] = useState(10); // Show 10 riddles at a time
   const newRiddleRef = useRef<HTMLDivElement>(null);
   const [isNewRiddle, setIsNewRiddle] = useState(false);
+  const [, setLocation] = useLocation();
   
   const { 
     data: riddlesData, 
