@@ -9,10 +9,12 @@ type RiddleCardProps = {
 
 export default function RiddleCard({ riddle, isFeatured = false }: RiddleCardProps) {
   const frontContent = (
-    <div className="p-4 h-full flex items-center justify-center">
-      <p className="text-gray-800 text-base md:text-lg text-center w-full break-words">
-        {riddle.question}
-      </p>
+    <div className="p-4 h-full relative">
+      <div className="flex h-full items-center justify-center">
+        <p className="text-gray-800 text-base md:text-lg text-center w-full break-words my-0">
+          {riddle.question}
+        </p>
+      </div>
       <div className="text-gray-400 text-xs opacity-50 absolute bottom-2 right-3">
         Tap to reveal
       </div>
@@ -20,10 +22,12 @@ export default function RiddleCard({ riddle, isFeatured = false }: RiddleCardPro
   );
 
   const backContent = (
-    <div className="p-4 h-full flex items-center justify-center">
-      <p className="text-primary-700 font-medium text-base md:text-lg text-center w-full break-words">
-        {riddle.answer}
-      </p>
+    <div className="p-4 h-full relative">
+      <div className="flex h-full items-center justify-center">
+        <p className="text-primary-700 font-medium text-base md:text-lg text-center w-full break-words my-0">
+          {riddle.answer}
+        </p>
+      </div>
     </div>
   );
 
