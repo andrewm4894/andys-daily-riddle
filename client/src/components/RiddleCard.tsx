@@ -48,12 +48,8 @@ export default function RiddleCard({ riddle, isFeatured = false }: RiddleCardPro
         </span>
       </div>
       
-      <div className="my-2">
-        <p className="text-xs text-gray-500 mb-1">Question:</p>
-        <p className="text-gray-700 text-sm mb-3">{riddle.question}</p>
-        
-        <p className="text-xs text-gray-500 mb-1">Answer:</p>
-        <p className="text-primary-700 font-medium">
+      <div className="my-4 flex items-center justify-center flex-col">
+        <p className="text-primary-700 font-medium text-lg text-center">
           {riddle.answer}
         </p>
       </div>
