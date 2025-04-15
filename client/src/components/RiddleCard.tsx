@@ -2,7 +2,8 @@ import { useState } from "react";
 import { type Riddle } from "@shared/schema";
 import RatingStars from "./RatingStars";
 import { useRateRiddle } from "@/hooks/use-rate-riddle";
-import { Star } from "lucide-react";
+import { Star, Copy } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 type RiddleCardProps = {
   riddle: Riddle;
@@ -11,7 +12,9 @@ type RiddleCardProps = {
 
 export default function RiddleCard({ riddle, isFeatured = false }: RiddleCardProps) {
   const [isFlipped, setIsFlipped] = useState(false);
+  const [isCopying, setIsCopying] = useState(false);
   const { mutate: rateRiddle } = useRateRiddle();
+  const { toast } = useToast();
 
   const handleFlip = () => {
     setIsFlipped(!isFlipped);
@@ -20,6 +23,35 @@ export default function RiddleCard({ riddle, isFeatured = false }: RiddleCardPro
   const handleRate = (rating: number) => {
     // Rating is handled by the RatingStars component (stopPropagation applied there)
     rateRiddle({ riddleId: riddle.id, rating });
+  };
+  
+  const handleCopyQuestion = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent card from flipping
+    
+    // Copy the riddle question to clipboard
+    navigator.clipboard.writeText(riddle.question)
+      .then(() => {
+        setIsCopying(true);
+        toast({
+          title: "Copied to clipboard",
+          description: "The riddle has been copied to your clipboard",
+          duration: 2000,
+        });
+        
+        // Reset the copy icon after a short delay
+        setTimeout(() => {
+          setIsCopying(false);
+        }, 1000);
+      })
+      .catch(err => {
+        console.error('Failed to copy text: ', err);
+        toast({
+          title: "Copy failed",
+          description: "Could not copy to clipboard. Please try again.",
+          variant: "destructive",
+          duration: 2000,
+        });
+      });
   };
 
   return (
@@ -36,8 +68,18 @@ export default function RiddleCard({ riddle, isFeatured = false }: RiddleCardPro
         <div 
           className={`py-5 px-4 flex flex-col items-center gap-3 ${isFlipped ? 'hidden' : 'flex'}`}
         >
-          <div className="text-gray-800 text-base md:text-lg text-center w-full break-words">
+          <div className="text-gray-800 text-base md:text-lg text-center w-full break-words relative group/question">
             {riddle.question}
+            
+            {/* Copy Button */}
+            <button
+              className="absolute right-0 top-0 p-1.5 text-gray-400 hover:text-gray-600 bg-white/50 rounded-full opacity-0 group-hover/question:opacity-100 transition-opacity"
+              onClick={handleCopyQuestion}
+              aria-label="Copy question"
+              title="Copy question"
+            >
+              <Copy size={16} className={isCopying ? "text-green-500" : ""} />
+            </button>
           </div>
           
           {riddle.averageRating !== null && riddle.ratingCount > 0 && (
