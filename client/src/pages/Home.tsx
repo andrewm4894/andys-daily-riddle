@@ -3,6 +3,7 @@ import { CircleHelp, RefreshCw, ChevronDown } from "lucide-react";
 import DateDisplay from "@/components/DateDisplay";
 import RiddleCard from "@/components/RiddleCard";
 import EmptyState from "@/components/EmptyState";
+import { LoadingAnimation } from "@/components/LoadingAnimation";
 import { useRiddles, useGenerateRiddle } from "@/hooks/use-riddles";
 import { Button } from "@/components/ui/button";
 import { queryClient } from "@/lib/queryClient";
@@ -79,17 +80,8 @@ export default function Home() {
               variant="default"
               size="sm"
             >
-              {generateRiddle.isPending ? (
-                <>
-                  <RefreshCw className="h-4 w-4 mr-1 animate-spin" />
-                  <span>Generating...</span>
-                </>
-              ) : (
-                <>
-                  <CircleHelp className="h-4 w-4 mr-1" />
-                  <span>Generate Riddle</span>
-                </>
-              )}
+              <CircleHelp className="h-4 w-4 mr-1" />
+              <span>Generate Riddle</span>
             </Button>
             <DateDisplay />
           </div>
@@ -116,6 +108,14 @@ export default function Home() {
             ) : (
               <>
                 <div className="space-y-4" ref={newRiddleRef}>
+                  {/* Show loading animation when generating a new riddle */}
+                  {generateRiddle.isPending && (
+                    <div className="mb-6 transform transition-all duration-300 ease-in-out">
+                      <LoadingAnimation />
+                    </div>
+                  )}
+                  
+                  {/* Display riddle cards */}
                   {riddlesData?.riddles.map((riddle, index) => (
                     <div 
                       key={riddle.id}
