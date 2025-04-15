@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { usePostHog } from "@/hooks/use-posthog";
 import { type Riddle } from "@shared/schema";
 import { useLocation } from "wouter";
 
@@ -30,6 +31,7 @@ export default function Home() {
   const { data: limitData } = useRiddleLimit();
   const generateRiddle = useGenerateRiddle();
   const { toast } = useToast();
+  const { captureEvent } = usePostHog();
   
   // Update our allRiddles array when new data comes in
   useEffect(() => {
