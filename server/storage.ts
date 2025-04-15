@@ -2,6 +2,8 @@ import {
   users, type User, type InsertUser,
   riddles, type Riddle, type InsertRiddle 
 } from "@shared/schema";
+import { db } from "./db";
+import { eq, desc } from "drizzle-orm";
 
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
@@ -17,103 +19,79 @@ export interface IStorage {
   updateRiddle(id: number, updates: Partial<Omit<Riddle, "id">>): Promise<Riddle | undefined>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<number, User>;
-  private riddlesMap: Map<number, Riddle>;
-  currentUserId: number;
-  currentRiddleId: number;
-
-  constructor() {
-    this.users = new Map();
-    this.riddlesMap = new Map();
-    this.currentUserId = 1;
-    this.currentRiddleId = 1;
-  }
-
+export class DatabaseStorage implements IStorage {
   async getUser(id: number): Promise<User | undefined> {
-    return this.users.get(id);
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user || undefined;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const id = this.currentUserId++;
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
+    const [user] = await db.insert(users).values(insertUser).returning();
     return user;
   }
 
-  // Riddle implementations
   async getRiddles(limit = 100, offset = 0): Promise<Riddle[]> {
-    return Array.from(this.riddlesMap.values())
-      .sort((a, b) => {
-        // Sort by creation date descending
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-      })
-      .slice(offset, offset + limit);
+    return db.select()
+      .from(riddles)
+      .orderBy(desc(riddles.createdAt))
+      .limit(limit)
+      .offset(offset);
   }
 
   async getRiddleById(id: number): Promise<Riddle | undefined> {
-    return this.riddlesMap.get(id);
+    const [riddle] = await db.select().from(riddles).where(eq(riddles.id, id));
+    return riddle || undefined;
   }
 
   async getLatestRiddle(): Promise<Riddle | undefined> {
-    return Array.from(this.riddlesMap.values()).find(
-      (riddle) => riddle.isLatest === true
-    );
+    const [riddle] = await db.select()
+      .from(riddles)
+      .where(eq(riddles.isLatest, true))
+      .limit(1);
+    
+    return riddle || undefined;
   }
 
   async countRiddles(): Promise<number> {
-    return this.riddlesMap.size;
+    const result = await db.select().from(riddles);
+    return result.length;
   }
 
   async createRiddle(insertRiddle: InsertRiddle): Promise<Riddle> {
-    // If this is a new "latest" riddle, update all existing latest to false
+    // If this is the latest riddle, update all other riddles to not be latest
     if (insertRiddle.isLatest) {
-      for (const [id, riddle] of this.riddlesMap.entries()) {
-        if (riddle.isLatest) {
-          this.riddlesMap.set(id, { ...riddle, isLatest: false });
-        }
-      }
+      await db.update(riddles)
+        .set({ isLatest: false })
+        .where(eq(riddles.isLatest, true));
     }
-
-    const id = this.currentRiddleId++;
-    const now = new Date();
-    const riddle: Riddle = { 
-      ...insertRiddle, 
-      id, 
-      createdAt: now
-    };
     
-    this.riddlesMap.set(id, riddle);
+    const [riddle] = await db.insert(riddles)
+      .values(insertRiddle)
+      .returning();
+    
     return riddle;
   }
 
   async updateRiddle(id: number, updates: Partial<Omit<Riddle, "id">>): Promise<Riddle | undefined> {
-    const existingRiddle = this.riddlesMap.get(id);
-    
-    if (!existingRiddle) {
-      return undefined;
-    }
-
     // If we're setting this as latest, update all others
     if (updates.isLatest) {
-      for (const [riddleId, riddle] of this.riddlesMap.entries()) {
-        if (riddleId !== id && riddle.isLatest) {
-          this.riddlesMap.set(riddleId, { ...riddle, isLatest: false });
-        }
-      }
+      await db.update(riddles)
+        .set({ isLatest: false })
+        .where(eq(riddles.isLatest, true));
     }
-
-    const updatedRiddle = { ...existingRiddle, ...updates };
-    this.riddlesMap.set(id, updatedRiddle);
     
-    return updatedRiddle;
+    const [riddle] = await db.update(riddles)
+      .set(updates)
+      .where(eq(riddles.id, id))
+      .returning();
+    
+    return riddle || undefined;
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
