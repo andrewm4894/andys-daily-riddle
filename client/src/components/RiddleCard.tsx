@@ -68,10 +68,11 @@ export default function RiddleCard({ riddle, isFeatured = false }: RiddleCardPro
   );
 
   return (
-    <div className={`bg-white rounded-lg border ${isFeatured ? 'border-primary-200' : 'border-gray-200'} shadow-sm overflow-hidden transition duration-150 hover:shadow-md`}>
+    <div className={`bg-white rounded-lg border ${isFeatured ? 'border-blue-200' : 'border-gray-200'} shadow-sm overflow-hidden transition duration-150 hover:shadow-md`}>
       <CardFlip
         frontContent={frontContent}
         backContent={backContent}
+        className="min-h-[150px]"
       />
     </div>
   );

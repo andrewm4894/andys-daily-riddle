@@ -38,20 +38,18 @@ export default function Home() {
             <Button 
               onClick={() => generateRiddle.mutate()}
               disabled={generateRiddle.isPending}
-              className="bg-primary-500 hover:bg-primary-600 text-white shadow-sm"
+              variant="default"
               size="sm"
             >
               {generateRiddle.isPending ? (
                 <>
                   <RefreshCw className="h-4 w-4 mr-1 animate-spin" />
-                  <span className="hidden sm:inline">Generating...</span>
-                  <span className="sm:hidden">...</span>
+                  <span>Generating...</span>
                 </>
               ) : (
                 <>
                   <CircleHelp className="h-4 w-4 mr-1" />
-                  <span className="hidden sm:inline">Generate Riddle</span>
-                  <span className="sm:hidden">New</span>
+                  <span>Generate Riddle</span>
                 </>
               )}
             </Button>
