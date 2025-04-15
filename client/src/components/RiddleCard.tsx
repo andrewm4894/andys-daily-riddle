@@ -31,9 +31,7 @@ export default function RiddleCard({ riddle, isFeatured = false }: RiddleCardPro
           <div className="text-gray-800 text-base md:text-lg text-center w-full break-words">
             {riddle.question}
           </div>
-          <div className="text-gray-400 text-xs opacity-50 absolute bottom-2 right-3">
-            Tap to reveal
-          </div>
+
         </div>
         
         {/* Back of card - Answer */}
