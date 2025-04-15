@@ -10,7 +10,7 @@ type RiddleCardProps = {
 export default function RiddleCard({ riddle, isFeatured = false }: RiddleCardProps) {
   const frontContent = (
     <div className="p-5 h-full flex items-center justify-center">
-      <p className="text-gray-800 text-lg">
+      <p className="text-gray-800 text-lg text-center w-full">
         {riddle.question}
       </p>
     </div>
@@ -18,7 +18,7 @@ export default function RiddleCard({ riddle, isFeatured = false }: RiddleCardPro
 
   const backContent = (
     <div className="p-5 h-full flex items-center justify-center">
-      <p className="text-primary-700 font-medium text-lg text-center">
+      <p className="text-primary-700 font-medium text-lg text-center w-full">
         {riddle.answer}
       </p>
     </div>
