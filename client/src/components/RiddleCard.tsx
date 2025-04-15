@@ -9,46 +9,26 @@ type RiddleCardProps = {
 
 export default function RiddleCard({ riddle, isFeatured = false }: RiddleCardProps) {
   const frontContent = (
-    <div className="p-4 h-full">
-      <div className="flex justify-between items-center mb-2">
-        <div className="flex items-center">
-          <CircleHelp className="h-4 w-4 text-primary-500 mr-1.5" />
-          <span className="text-sm font-medium text-gray-600">Question</span>
-        </div>
-        {isFeatured && (
-          <span className="px-2 py-0.5 bg-primary-100 text-primary-700 text-xs rounded-full font-medium">
-            Latest
-          </span>
-        )}
-      </div>
-      <p className="text-gray-800 my-3">
+    <div className="p-5 h-full flex items-center justify-center">
+      <p className="text-gray-800 text-lg">
         {riddle.question}
       </p>
     </div>
   );
 
   const backContent = (
-    <div className="p-4 h-full">
-      <div className="flex justify-between items-center mb-2">
-        <div className="flex items-center">
-          <CircleHelp className="h-4 w-4 text-primary-500 mr-1.5" />
-          <span className="text-sm font-medium text-gray-600">Revealed</span>
-        </div>
-        <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full font-medium">
-          Answer
-        </span>
-      </div>
-      
-      <div className="my-4 flex items-center justify-center flex-col">
-        <p className="text-primary-700 font-medium text-lg text-center">
-          {riddle.answer}
-        </p>
-      </div>
+    <div className="p-5 h-full flex items-center justify-center">
+      <p className="text-primary-700 font-medium text-lg text-center">
+        {riddle.answer}
+      </p>
     </div>
   );
 
   return (
-    <div className={`bg-white rounded-lg border ${isFeatured ? 'border-blue-200' : 'border-gray-200'} shadow-sm overflow-hidden transition duration-150 hover:shadow-md relative group`}>
+    <div className={`bg-white rounded-lg border ${isFeatured ? 'border-primary-300 shadow-md' : 'border-gray-200'} overflow-hidden transition duration-150 hover:shadow-md relative group`}>
+      {isFeatured && (
+        <div className="absolute w-3 h-3 rounded-full bg-primary-500 top-3 right-3" />
+      )}
       <CardFlip
         frontContent={frontContent}
         backContent={backContent}
