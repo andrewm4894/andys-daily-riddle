@@ -1,7 +1,7 @@
 import { type Riddle } from "@shared/schema";
 import { CardFlip } from "./ui/card-flip";
 import { format } from "date-fns";
-import { CircleHelp, RotateCw } from "lucide-react";
+import { CircleHelp } from "lucide-react";
 
 type RiddleCardProps = {
   riddle: Riddle;
@@ -55,11 +55,8 @@ export default function RiddleCard({ riddle, isFeatured = false }: RiddleCardPro
       <CardFlip
         frontContent={frontContent}
         backContent={backContent}
-        className="min-h-[150px] cursor-pointer group-hover:opacity-95"
+        className="min-h-[150px] cursor-pointer"
       />
-      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-50 transition-opacity duration-200 pointer-events-none">
-        <RotateCw className="h-6 w-6 text-primary-600" />
-      </div>
     </div>
   );
 }
