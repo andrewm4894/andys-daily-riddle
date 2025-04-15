@@ -144,13 +144,6 @@ export default function Home() {
       });
       setIsShuffled(true);
     }
-    
-    // Show toast notification
-    toast({
-      title: isShuffled ? "Original order restored" : "Riddles shuffled",
-      description: isShuffled ? "Showing riddles in chronological order" : "Riddles have been mixed up for variety",
-      duration: 2000,
-    });
   };
   
   // Redirect to checkout page for paid riddle generation
