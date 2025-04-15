@@ -41,6 +41,7 @@ export function useRiddles(limit = 10, offset = 0) {
       
       return response.json();
     },
+    staleTime: 60000, // Keep data fresh for 1 minute
   });
 }
 

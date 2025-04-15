@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { CircleHelp, ChevronDown, AlertCircle, CreditCard } from "lucide-react";
 import RiddleCard from "@/components/RiddleCard";
 import EmptyState from "@/components/EmptyState";
@@ -17,15 +17,37 @@ export default function Home() {
   const newRiddleRef = useRef<HTMLDivElement>(null);
   const [isNewRiddle, setIsNewRiddle] = useState(false);
   const [, setLocation] = useLocation();
+  const [allRiddles, setAllRiddles] = useState<Riddle[]>([]);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
   
   const { 
     data: riddlesData, 
-    isLoading: isLoadingRiddles 
+    isLoading: isLoadingRiddles,
+    isFetching: isLoadingMore 
   } = useRiddles(riddlesLimit, riddlesOffset);
   
   const { data: limitData } = useRiddleLimit();
   const generateRiddle = useGenerateRiddle();
   const { toast } = useToast();
+  
+  // Update our allRiddles array when new data comes in
+  useEffect(() => {
+    if (riddlesData?.riddles) {
+      if (riddlesOffset === 0) {
+        // Reset the list if we're at the beginning
+        setAllRiddles(riddlesData.riddles);
+      } else {
+        // Otherwise append the new riddles
+        setAllRiddles(prev => {
+          // Create a Set of existing IDs to avoid duplicates
+          const existingIds = new Set(prev.map(r => r.id));
+          // Filter out any riddles that are already in our list
+          const newRiddles = riddlesData.riddles.filter(r => !existingIds.has(r.id));
+          return [...prev, ...newRiddles];
+        });
+      }
+    }
+  }, [riddlesData, riddlesOffset]);
   
   // Reset to top when new riddle is generated
   useEffect(() => {
@@ -50,6 +72,29 @@ export default function Home() {
       newRiddleRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [isNewRiddle, riddlesData]);
+  
+  // Set up intersection observer for infinite scroll
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        // If the load more element is visible and we're not already loading
+        if (entries[0].isIntersecting && !isLoadingMore && riddlesData?.pagination.hasMore) {
+          setRiddlesOffset(prev => prev + riddlesLimit);
+        }
+      },
+      { threshold: 0.1 } // Trigger when 10% of the element is visible
+    );
+    
+    if (loadMoreRef.current) {
+      observer.observe(loadMoreRef.current);
+    }
+    
+    return () => {
+      if (loadMoreRef.current) {
+        observer.unobserve(loadMoreRef.current);
+      }
+    };
+  }, [loadMoreRef, isLoadingMore, riddlesData, riddlesLimit]);
   
   const handleLoadMore = () => {
     if (riddlesData?.pagination.hasMore) {
