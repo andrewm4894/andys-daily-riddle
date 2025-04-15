@@ -1,8 +1,9 @@
-import type { Express, Request, Response } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { createDailyRiddle, getLatestRiddle, getRiddles, getRiddleCount } from "./services/riddleService";
 import { startRiddleScheduler } from "./scheduler";
+import { rateLimiter } from "./services/rateLimiter";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -61,9 +62,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Manually generate a new riddle (for testing/admin purposes)
+  // Endpoint to check remaining riddle generation limit
+  app.get("/api/riddles/limit", (req: Request, res: Response) => {
+    const ip = req.ip || req.socket.remoteAddress || 'unknown';
+    const remaining = rateLimiter.getRemainingRequests(ip);
+    return res.json({ 
+      remaining,
+      limit: 10,
+      canGenerate: remaining > 0
+    });
+  });
+
+  // Manually generate a new riddle with rate limiting
   app.post("/api/riddles/generate", async (req: Request, res: Response) => {
     try {
+      // Get client IP for rate limiting
+      const ip = req.ip || req.socket.remoteAddress || 'unknown';
+      
+      // Check if user has hit their daily limit
+      if (!rateLimiter.canGenerate(ip)) {
+        return res.status(429).json({ 
+          message: "Daily limit reached. You can generate up to 10 riddles per day.",
+          remaining: 0,
+          resetTime: "Midnight in your local timezone"
+        });
+      }
+      
       // Check if count parameter is provided for generating multiple riddles
       const countSchema = z.preprocess(
         (val) => parseInt(String(val), 10),
@@ -71,29 +95,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
       );
       
       const count = req.query.count ? countSchema.parse(req.query.count) : 1;
+      // For rate limiting, restrict count to maximum of remaining riddles
+      const actualCount = Math.min(count, rateLimiter.getRemainingRequests(ip));
+      
       let generatedCount = 0;
       let lastRiddle = null;
       
-      for (let i = 0; i < count; i++) {
+      for (let i = 0; i < actualCount; i++) {
         const result = await createDailyRiddle();
         
         if (result.success) {
           generatedCount++;
           lastRiddle = await getLatestRiddle();
+          // Increment the rate limiter counter
+          rateLimiter.increment(ip);
         }
       }
       
+      const remaining = rateLimiter.getRemainingRequests(ip);
+      
       if (generatedCount > 0) {
         if (count === 1) {
-          return res.status(201).json(lastRiddle);
+          return res.status(201).json({
+            ...lastRiddle,
+            remainingToday: remaining
+          });
         } else {
           return res.status(201).json({ 
             message: `Successfully generated ${generatedCount} riddles`,
-            lastRiddle 
+            lastRiddle,
+            remainingToday: remaining
           });
         }
       } else {
-        return res.status(500).json({ message: "Failed to generate riddles" });
+        return res.status(500).json({ 
+          message: "Failed to generate riddles",
+          remainingToday: remaining
+        });
       }
     } catch (error) {
       console.error("Error generating riddle:", error);
