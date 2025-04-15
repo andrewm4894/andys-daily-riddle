@@ -46,7 +46,7 @@ export default function Home() {
             <Button 
               onClick={() => generateRiddle.mutate()}
               disabled={generateRiddle.isPending}
-              className="bg-gradient-to-r from-amber-500 to-amber-700 hover:from-amber-600 hover:to-amber-800 text-white font-semibold shadow-lg"
+              className="bg-primary-500 hover:bg-primary-600 text-white font-semibold shadow-md"
             >
               {generateRiddle.isPending ? (
                 <>
@@ -56,7 +56,7 @@ export default function Home() {
               ) : (
                 <>
                   <CircleHelp className="h-4 w-4 mr-2" />
-                  Generate Premium Riddle
+                  Generate Riddle
                 </>
               )}
             </Button>
@@ -92,9 +92,9 @@ export default function Home() {
                     <Button 
                       onClick={() => generateRiddle.mutate()}
                       disabled={generateRiddle.isPending}
-                      className="bg-secondary-500 hover:bg-secondary-600"
+                      className="bg-primary-500 hover:bg-primary-600 text-white"
                     >
-                      {generateRiddle.isPending ? "Generating..." : "Generate Today's Riddle"}
+                      {generateRiddle.isPending ? "Generating..." : "Generate Riddle"}
                     </Button>
                   </div>
                 </div>
