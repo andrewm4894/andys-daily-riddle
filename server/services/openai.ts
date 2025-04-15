@@ -27,13 +27,14 @@ export async function generateRiddle(): Promise<RiddleResponse> {
           role: "system",
           content: `You are a creative riddle generator. Generate an interesting, challenging but solvable riddle with its answer. 
           Be creative and original. Make sure your riddle is not similar to any of the riddles in the list below.
+          Always include a relevant emoji at the beginning of the answer to make it more fun.
           
           RECENT RIDDLES (DO NOT DUPLICATE THESE):
           ${riddlesText}`
         },
         {
           role: "user",
-          content: "Generate a unique and interesting riddle with its answer. Make sure it's not similar to any of the recent riddles I provided. Your riddle should be original, clever, and fun. Respond with JSON in this format: { 'question': 'the riddle question', 'answer': 'the riddle answer' }"
+          content: "Generate a unique and interesting riddle with its answer. Make sure it's not similar to any of the recent riddles I provided. Your riddle should be original, clever, and fun. Always include a relevant emoji at the beginning of the answer. Respond with JSON in this format: { 'question': 'the riddle question', 'answer': '🔍 the riddle answer' } - but choose an emoji that matches the answer content."
         }
       ],
       response_format: { type: "json_object" },
