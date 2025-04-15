@@ -117,31 +117,34 @@ export default function Home() {
   
   // Handle shuffling and unshuffling
   const shuffleRiddles = () => {
+    // Always use the full dataset from riddlesData as the source
+    if (!riddlesData?.riddles || riddlesData.riddles.length === 0) {
+      return; // Nothing to shuffle
+    }
+    
+    // Keep track of how many riddles we have loaded
+    const totalRiddles = [...allRiddles];
+    
     if (isShuffled) {
-      // If already shuffled, restore the original order
-      if (riddlesData?.riddles) {
-        setAllRiddles(riddlesData.riddles);
-      }
+      // If already shuffled, restore the original order from the server data
+      setAllRiddles(totalRiddles.sort((a, b) => b.id - a.id)); // Sort by ID descending (newest first)
       setIsShuffled(false);
     } else {
       // Apply Fisher-Yates shuffle algorithm
-      setAllRiddles(prevRiddles => {
-        // Create a copy of the array to avoid mutating state directly
-        const shuffled = [...prevRiddles];
-        
-        // Keep the first (newest) riddle in place
-        const startIndex = 1;
-        
-        // Fisher-Yates shuffle algorithm
-        for (let i = shuffled.length - 1; i > startIndex; i--) {
-          // Get random index between startIndex and i (inclusive)
-          const j = startIndex + Math.floor(Math.random() * (i - startIndex + 1));
-          // Swap elements at i and j
-          [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-        }
-        
-        return shuffled;
-      });
+      const shuffled = [...totalRiddles];
+      
+      // Keep the newest riddle in place (first card)
+      const startIndex = 1;
+      
+      // Fisher-Yates shuffle algorithm
+      for (let i = shuffled.length - 1; i > startIndex; i--) {
+        // Get random index between startIndex and i (inclusive)
+        const j = startIndex + Math.floor(Math.random() * (i - startIndex + 1));
+        // Swap elements at i and j
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      
+      setAllRiddles(shuffled);
       setIsShuffled(true);
     }
   };
