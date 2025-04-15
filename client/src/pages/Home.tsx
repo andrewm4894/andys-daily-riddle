@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CircleHelp, FolderOpen, ChevronDown } from "lucide-react";
+import { CircleHelp, FolderOpen, ChevronDown, RefreshCw } from "lucide-react";
 import DateDisplay from "@/components/DateDisplay";
 import RiddleCard from "@/components/RiddleCard";
 import EmptyState from "@/components/EmptyState";
@@ -42,7 +42,26 @@ export default function Home() {
             <CircleHelp className="h-8 w-8 text-primary-500" />
             <h1 className="ml-2 text-2xl font-heading font-bold text-dark">The Daily Riddle</h1>
           </div>
-          <DateDisplay />
+          <div className="flex items-center gap-4">
+            <Button 
+              onClick={() => generateRiddle.mutate()}
+              disabled={generateRiddle.isPending}
+              className="bg-gradient-to-r from-amber-500 to-amber-700 hover:from-amber-600 hover:to-amber-800 text-white font-semibold shadow-lg"
+            >
+              {generateRiddle.isPending ? (
+                <>
+                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <CircleHelp className="h-4 w-4 mr-2" />
+                  Generate Premium Riddle
+                </>
+              )}
+            </Button>
+            <DateDisplay />
+          </div>
         </div>
       </header>
 
