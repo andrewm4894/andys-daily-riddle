@@ -27,12 +27,6 @@ export default function RiddleCard({ riddle, isFeatured = false }: RiddleCardPro
       <p className="text-gray-800 my-3">
         {riddle.question}
       </p>
-      <div className="mt-3 flex justify-center">
-        <div className="text-xs text-primary-600 font-medium flex items-center">
-          <RotateCw className="h-3.5 w-3.5 mr-1" />
-          Tap to reveal answer
-        </div>
-      </div>
     </div>
   );
 
@@ -53,23 +47,19 @@ export default function RiddleCard({ riddle, isFeatured = false }: RiddleCardPro
           {riddle.answer}
         </p>
       </div>
-      
-      <div className="mt-3 flex justify-center">
-        <div className="text-xs text-primary-600 font-medium flex items-center">
-          <RotateCw className="h-3.5 w-3.5 mr-1" />
-          Tap to see riddle
-        </div>
-      </div>
     </div>
   );
 
   return (
-    <div className={`bg-white rounded-lg border ${isFeatured ? 'border-blue-200' : 'border-gray-200'} shadow-sm overflow-hidden transition duration-150 hover:shadow-md`}>
+    <div className={`bg-white rounded-lg border ${isFeatured ? 'border-blue-200' : 'border-gray-200'} shadow-sm overflow-hidden transition duration-150 hover:shadow-md relative group`}>
       <CardFlip
         frontContent={frontContent}
         backContent={backContent}
-        className="min-h-[150px]"
+        className="min-h-[150px] cursor-pointer group-hover:opacity-95"
       />
+      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-50 transition-opacity duration-200 pointer-events-none">
+        <RotateCw className="h-6 w-6 text-primary-600" />
+      </div>
     </div>
   );
 }
