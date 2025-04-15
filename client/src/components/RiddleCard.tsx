@@ -68,19 +68,20 @@ export default function RiddleCard({ riddle, isFeatured = false }: RiddleCardPro
         <div 
           className={`py-5 px-4 flex flex-col items-center gap-3 ${isFlipped ? 'hidden' : 'flex'}`}
         >
-          <div className="text-gray-800 text-base md:text-lg text-center w-full break-words relative group/question">
+          <div className="text-gray-800 text-base md:text-lg text-center w-full break-words relative pb-6">
             {riddle.question}
-            
-            {/* Copy Button */}
-            <button
-              className="absolute right-0 top-0 p-1.5 text-gray-400 hover:text-gray-600 bg-white/50 rounded-full opacity-0 group-hover/question:opacity-100 transition-opacity"
-              onClick={handleCopyQuestion}
-              aria-label="Copy question"
-              title="Copy question"
-            >
-              <Copy size={16} className={isCopying ? "text-green-500" : ""} />
-            </button>
           </div>
+          
+          {/* Copy Button - Positioned below text */}
+          <button
+            className="flex items-center gap-1 px-2 py-1 text-xs text-gray-500 hover:text-primary-600 rounded-md transition-colors"
+            onClick={handleCopyQuestion}
+            aria-label="Copy question"
+            title="Copy question"
+          >
+            <Copy size={14} className={isCopying ? "text-green-500" : ""} />
+            <span>Copy</span>
+          </button>
           
           {riddle.averageRating !== null && riddle.ratingCount > 0 && (
             <div 
