@@ -85,13 +85,13 @@ export default function Home() {
                       size="sm"
                       className="relative"
                     >
-                      <CreditCard className="h-4 w-4 mr-1" />
-                      <span>Pay $1 for Riddle</span>
+                      <CircleHelp className="h-4 w-4 mr-1" />
+                      <span>Generate Riddle</span>
                     </Button>
                   </div>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>Generate a new riddle for $1.00</p>
+                  <p>Generate a new riddle</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>

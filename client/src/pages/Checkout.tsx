@@ -57,7 +57,7 @@ const CheckoutForm = () => {
         
         if (response.ok) {
           toast({
-            title: "Payment Successful",
+            title: "Success",
             description: "Your riddle has been generated!",
           });
           // Redirect to home page to see the new riddle
@@ -68,8 +68,8 @@ const CheckoutForm = () => {
         }
       } catch (err: any) {
         toast({
-          title: "Error After Payment",
-          description: err.message || 'Your payment was successful, but we could not generate a riddle',
+          title: "Error",
+          description: err.message || 'We could not generate a riddle. Please try again.',
           variant: "destructive",
         });
       }
@@ -88,7 +88,7 @@ const CheckoutForm = () => {
         disabled={!stripe || isProcessing} 
         className="w-full"
       >
-        {isProcessing ? "Processing..." : "Pay $1.00 and Generate Riddle"}
+        {isProcessing ? "Processing..." : "Generate Riddle"}
       </Button>
     </form>
   );
@@ -107,7 +107,7 @@ export default function Checkout() {
         
         if (!res.ok) {
           const errorData = await res.json();
-          throw new Error(errorData.message || 'Failed to create payment');
+          throw new Error(errorData.message || 'Failed to initialize');
         }
         
         const data = await res.json();
@@ -138,7 +138,7 @@ export default function Checkout() {
   if (!clientSecret) {
     return (
       <div className="container max-w-md mx-auto py-12 flex justify-center">
-        <LoadingAnimation message="Preparing payment form..." />
+        <LoadingAnimation message="Preparing form..." />
       </div>
     );
   }
@@ -149,7 +149,7 @@ export default function Checkout() {
         <CardHeader>
           <CardTitle className="text-center">Generate a New Riddle</CardTitle>
           <CardDescription className="text-center">
-            Pay $1.00 to generate a unique, AI-powered riddle.
+            Generate a unique, AI-powered riddle.
           </CardDescription>
         </CardHeader>
         <CardContent>
