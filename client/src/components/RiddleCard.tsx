@@ -24,26 +24,25 @@ export default function RiddleCard({ riddle, isFeatured = false }: RiddleCardPro
 
   return (
     <div 
-      className={`bg-white rounded-lg border ${isFeatured ? 'border-primary-300 shadow-md' : 'border-gray-200'} overflow-hidden transition duration-150 hover:shadow-md relative group cursor-pointer`}
+      className={`bg-white rounded-lg border ${isFeatured ? 'border-primary-300 shadow-md' : 'border-gray-200'} overflow-hidden transition duration-150 hover:shadow-md relative group cursor-pointer min-h-[120px]`}
       onClick={handleFlip}
-      style={{ height: "150px" }}
     >
       {isFeatured && (
         <div className="absolute w-3 h-3 rounded-full bg-primary-500 top-3 right-3 z-10" />
       )}
       
-      <div className="w-full h-full relative">
+      <div className="w-full relative">
         {/* Front of card - Question */}
         <div 
-          className={`absolute inset-0 flex flex-col items-center justify-between p-4 w-full h-full ${isFlipped ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300`}
+          className={`py-5 px-4 flex flex-col items-center gap-3 ${isFlipped ? 'hidden' : 'flex'}`}
         >
-          <div className="text-gray-800 text-base md:text-lg text-center w-full break-words flex-grow flex items-center justify-center">
+          <div className="text-gray-800 text-base md:text-lg text-center w-full break-words">
             {riddle.question}
           </div>
           
           {riddle.averageRating !== null && riddle.ratingCount > 0 && (
             <div 
-              className="mt-2 text-xs text-gray-500 flex items-center justify-center gap-1" 
+              className="text-xs text-gray-500 flex items-center justify-center gap-1" 
               onClick={(e) => e.stopPropagation()}
             >
               <Star
@@ -57,14 +56,13 @@ export default function RiddleCard({ riddle, isFeatured = false }: RiddleCardPro
         
         {/* Back of card - Answer */}
         <div 
-          className={`absolute inset-0 flex flex-col items-center justify-between p-4 w-full h-full ${isFlipped ? 'opacity-100' : 'opacity-0'} transition-opacity duration-300`}
+          className={`py-5 px-4 flex flex-col items-center gap-3 ${isFlipped ? 'flex' : 'hidden'}`}
         >
-          <div className="text-primary-700 font-medium text-base md:text-lg text-center w-full break-words flex-grow flex items-center justify-center">
+          <div className="text-primary-700 font-medium text-base md:text-lg text-center w-full break-words">
             {riddle.answer}
           </div>
           
           <div 
-            className="mt-2" 
             onClick={(e) => e.stopPropagation()}
           >
             <RatingStars
