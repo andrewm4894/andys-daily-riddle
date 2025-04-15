@@ -94,7 +94,7 @@ export default function Home() {
         observer.unobserve(loadMoreRef.current);
       }
     };
-  }, [loadMoreRef, isLoadingMore, riddlesData, riddlesLimit]);
+  }, [loadMoreRef, isLoadingMore, riddlesData, riddlesLimit, riddlesOffset]);
   
   const handleLoadMore = () => {
     if (riddlesData?.pagination.hasMore) {
@@ -172,7 +172,7 @@ export default function Home() {
                   )}
                   
                   {/* Display riddle cards */}
-                  {riddlesData?.riddles.map((riddle, index) => (
+                  {allRiddles.map((riddle, index) => (
                     <div 
                       key={riddle.id}
                       className={`${index === 0 && isNewRiddle ? 'animate-pulse bg-blue-50 rounded-lg' : ''}`}
@@ -185,15 +185,17 @@ export default function Home() {
                   ))}
                 </div>
 
+                {/* Infinite scroll trigger element */}
                 {riddlesData?.pagination.hasMore && (
-                  <div className="mt-8 flex justify-center">
-                    <button 
-                      className="px-4 py-2 bg-white border border-gray-200 rounded-md text-primary-600 text-sm font-medium hover:bg-gray-50 flex items-center"
-                      onClick={handleLoadMore}
-                    >
-                      <ChevronDown className="h-4 w-4 mr-2" />
-                      Load more
-                    </button>
+                  <div 
+                    ref={loadMoreRef} 
+                    className="h-10 flex items-center justify-center py-8"
+                  >
+                    {isLoadingMore ? (
+                      <div className="animate-spin h-5 w-5 border-t-2 border-primary-500 rounded-full" />
+                    ) : (
+                      <span className="text-sm text-gray-400">Scroll for more</span>
+                    )}
                   </div>
                 )}
               </>
