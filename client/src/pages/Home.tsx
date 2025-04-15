@@ -1,14 +1,18 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { CircleHelp, RefreshCw, ChevronDown } from "lucide-react";
 import DateDisplay from "@/components/DateDisplay";
 import RiddleCard from "@/components/RiddleCard";
 import EmptyState from "@/components/EmptyState";
 import { useRiddles, useGenerateRiddle } from "@/hooks/use-riddles";
 import { Button } from "@/components/ui/button";
+import { queryClient } from "@/lib/queryClient";
+import { type Riddle } from "@shared/schema";
 
 export default function Home() {
   const [riddlesOffset, setRiddlesOffset] = useState(0);
   const [riddlesLimit] = useState(10); // Show 10 riddles at a time
+  const newRiddleRef = useRef<HTMLDivElement>(null);
+  const [isNewRiddle, setIsNewRiddle] = useState(false);
   
   const { 
     data: riddlesData, 
@@ -17,9 +21,43 @@ export default function Home() {
   
   const generateRiddle = useGenerateRiddle();
   
+  // Reset to top when new riddle is generated
+  useEffect(() => {
+    if (generateRiddle.isSuccess) {
+      // Reset to top of the list
+      setRiddlesOffset(0);
+      // Highlight new riddle briefly
+      setIsNewRiddle(true);
+      
+      // Reset the highlight after animation
+      const timer = setTimeout(() => {
+        setIsNewRiddle(false);
+      }, 2000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [generateRiddle.isSuccess]);
+  
+  // Scroll to top when new riddle added
+  useEffect(() => {
+    if (isNewRiddle && newRiddleRef.current) {
+      newRiddleRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [isNewRiddle, riddlesData]);
+  
   const handleLoadMore = () => {
     if (riddlesData?.pagination.hasMore) {
       setRiddlesOffset(prev => prev + riddlesLimit);
+    }
+  };
+  
+  const handleGenerateRiddle = async () => {
+    try {
+      // Prefetch to ensure the list refreshes with the new riddle
+      await generateRiddle.mutateAsync();
+      queryClient.invalidateQueries({ queryKey: ["/api/riddles"] });
+    } catch (error) {
+      console.error("Failed to generate riddle:", error);
     }
   };
   
@@ -36,7 +74,7 @@ export default function Home() {
           </div>
           <div className="flex items-center gap-3">
             <Button 
-              onClick={() => generateRiddle.mutate()}
+              onClick={handleGenerateRiddle}
               disabled={generateRiddle.isPending}
               variant="default"
               size="sm"
@@ -77,13 +115,17 @@ export default function Home() {
               </div>
             ) : (
               <>
-                <div className="space-y-4">
-                  {riddlesData?.riddles.map((riddle) => (
-                    <RiddleCard 
-                      key={riddle.id} 
-                      riddle={riddle} 
-                      isFeatured={riddlesData.riddles.indexOf(riddle) === 0}
-                    />
+                <div className="space-y-4" ref={newRiddleRef}>
+                  {riddlesData?.riddles.map((riddle, index) => (
+                    <div 
+                      key={riddle.id}
+                      className={`${index === 0 && isNewRiddle ? 'animate-pulse bg-blue-50 rounded-lg' : ''}`}
+                    >
+                      <RiddleCard 
+                        riddle={riddle} 
+                        isFeatured={index === 0}
+                      />
+                    </div>
                   ))}
                 </div>
 
