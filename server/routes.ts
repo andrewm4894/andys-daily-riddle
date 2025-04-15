@@ -64,13 +64,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Manually generate a new riddle (for testing/admin purposes)
   app.post("/api/riddles/generate", async (req: Request, res: Response) => {
     try {
-      const result = await createDailyRiddle();
+      // Check if count parameter is provided for generating multiple riddles
+      const countSchema = z.preprocess(
+        (val) => parseInt(String(val), 10),
+        z.number().positive().default(1)
+      );
       
-      if (result.success) {
-        const latestRiddle = await getLatestRiddle();
-        return res.status(201).json(latestRiddle);
+      const count = req.query.count ? countSchema.parse(req.query.count) : 1;
+      let generatedCount = 0;
+      let lastRiddle = null;
+      
+      for (let i = 0; i < count; i++) {
+        const result = await createDailyRiddle();
+        
+        if (result.success) {
+          generatedCount++;
+          lastRiddle = await getLatestRiddle();
+        }
+      }
+      
+      if (generatedCount > 0) {
+        if (count === 1) {
+          return res.status(201).json(lastRiddle);
+        } else {
+          return res.status(201).json({ 
+            message: `Successfully generated ${generatedCount} riddles`,
+            lastRiddle 
+          });
+        }
       } else {
-        return res.status(500).json({ message: result.error || "Failed to generate riddle" });
+        return res.status(500).json({ message: "Failed to generate riddles" });
       }
     } catch (error) {
       console.error("Error generating riddle:", error);
