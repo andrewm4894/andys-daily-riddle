@@ -44,16 +44,32 @@ export function useRiddles(limit = 10, offset = 0) {
   });
 }
 
+export function useRiddleLimit() {
+  return useQuery<{remaining: number, limit: number, canGenerate: boolean}>({
+    queryKey: ["/api/riddles/limit"],
+    // Refresh every minute to keep the UI up-to-date
+    refetchInterval: 60000,
+  });
+}
+
 export function useGenerateRiddle() {
   const mutation = useMutation({
     mutationFn: async () => {
       const response = await apiRequest("POST", "/api/riddles/generate");
+      if (response.status === 429) {
+        const error = await response.json();
+        throw new Error(error.message);
+      }
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       // Invalidate queries to refresh data
       queryClient.invalidateQueries({ queryKey: ["/api/riddles/latest"] });
       queryClient.invalidateQueries({ queryKey: ["/api/riddles"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/riddles/limit"] });
+      
+      // Return the remaining count from the response if it exists
+      return data.remainingToday !== undefined ? data.remainingToday : null;
     },
   });
 

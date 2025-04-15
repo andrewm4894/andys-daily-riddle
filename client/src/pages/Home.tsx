@@ -1,12 +1,14 @@
 import { useState, useEffect, useRef } from "react";
-import { CircleHelp, RefreshCw, ChevronDown } from "lucide-react";
+import { CircleHelp, RefreshCw, ChevronDown, AlertCircle } from "lucide-react";
 import DateDisplay from "@/components/DateDisplay";
 import RiddleCard from "@/components/RiddleCard";
 import EmptyState from "@/components/EmptyState";
 import { LoadingAnimation } from "@/components/LoadingAnimation";
-import { useRiddles, useGenerateRiddle } from "@/hooks/use-riddles";
+import { useRiddles, useGenerateRiddle, useRiddleLimit } from "@/hooks/use-riddles";
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 import { type Riddle } from "@shared/schema";
 
 export default function Home() {
@@ -20,7 +22,9 @@ export default function Home() {
     isLoading: isLoadingRiddles 
   } = useRiddles(riddlesLimit, riddlesOffset);
   
+  const { data: limitData } = useRiddleLimit();
   const generateRiddle = useGenerateRiddle();
+  const { toast } = useToast();
   
   // Reset to top when new riddle is generated
   useEffect(() => {
@@ -53,12 +57,35 @@ export default function Home() {
   };
   
   const handleGenerateRiddle = async () => {
+    // Check if user still has riddles left for today
+    if (limitData && limitData.remaining <= 0) {
+      toast({
+        title: "Daily Limit Reached",
+        description: "You can generate up to 10 riddles per day. Try again tomorrow!",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     try {
       // Prefetch to ensure the list refreshes with the new riddle
-      await generateRiddle.mutateAsync();
+      const result = await generateRiddle.mutateAsync();
       queryClient.invalidateQueries({ queryKey: ["/api/riddles"] });
+      
+      // Show remaining count toast
+      if (result !== null && typeof result === 'number') {
+        toast({
+          title: "Riddle Generated!",
+          description: `You have ${result} riddle generation${result !== 1 ? 's' : ''} remaining today.`,
+        });
+      }
     } catch (error) {
       console.error("Failed to generate riddle:", error);
+      toast({
+        title: "Generation Failed",
+        description: error instanceof Error ? error.message : "Failed to generate a new riddle. Please try again.",
+        variant: "destructive"
+      });
     }
   };
   
@@ -74,15 +101,44 @@ export default function Home() {
             <h1 className="ml-2 text-xl font-bold text-dark">The Daily Riddle</h1>
           </div>
           <div className="flex items-center gap-3">
-            <Button 
-              onClick={handleGenerateRiddle}
-              disabled={generateRiddle.isPending}
-              variant="default"
-              size="sm"
-            >
-              <CircleHelp className="h-4 w-4 mr-1" />
-              <span>Generate Riddle</span>
-            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="flex items-center">
+                    <Button 
+                      onClick={handleGenerateRiddle}
+                      disabled={generateRiddle.isPending || (limitData && limitData.remaining <= 0)}
+                      variant="default"
+                      size="sm"
+                      className="relative"
+                    >
+                      <CircleHelp className="h-4 w-4 mr-1" />
+                      <span>Generate Riddle</span>
+                      
+                      {limitData && limitData.remaining < limitData.limit && (
+                        <span className="absolute -top-2 -right-2 bg-primary-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                          {limitData.remaining}
+                        </span>
+                      )}
+                    </Button>
+                    
+                    {limitData && limitData.remaining <= 0 && (
+                      <span className="ml-2 text-amber-600 flex items-center text-xs">
+                        <AlertCircle className="h-3 w-3 mr-1" />
+                        Limit reached
+                      </span>
+                    )}
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>
+                    {limitData && limitData.remaining > 0 
+                      ? `You can generate ${limitData.remaining} more riddle${limitData.remaining !== 1 ? 's' : ''} today`
+                      : 'Daily limit reached. Try again tomorrow!'}
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
             <DateDisplay />
           </div>
         </div>
