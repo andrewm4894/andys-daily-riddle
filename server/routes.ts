@@ -214,6 +214,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Rate a riddle
+  app.post("/api/riddles/:id/rate", async (req: Request, res: Response) => {
+    try {
+      // Validate the request body
+      const ratingSchema = z.object({
+        rating: z.number().min(1).max(5).int()
+      });
+      
+      const { rating } = ratingSchema.parse(req.body);
+      const id = parseInt(req.params.id, 10);
+      
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid riddle ID" });
+      }
+      
+      const riddle = await storage.getRiddleById(id);
+      if (!riddle) {
+        return res.status(404).json({ message: "Riddle not found" });
+      }
+      
+      const updatedRiddle = await storage.rateRiddle(id, rating);
+      res.json(updatedRiddle);
+    } catch (error: any) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Invalid rating",
+          errors: error.errors 
+        });
+      }
+      
+      res.status(500).json({ message: "Error rating riddle: " + error.message });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
