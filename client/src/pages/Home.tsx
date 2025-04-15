@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { CircleHelp, ChevronDown, AlertCircle, CreditCard } from "lucide-react";
+import { CircleHelp, ChevronDown, AlertCircle, CreditCard, Shuffle } from "lucide-react";
 import RiddleCard from "@/components/RiddleCard";
 import EmptyState from "@/components/EmptyState";
 import { LoadingAnimation } from "@/components/LoadingAnimation";
@@ -19,6 +19,7 @@ export default function Home() {
   const [, setLocation] = useLocation();
   const [allRiddles, setAllRiddles] = useState<Riddle[]>([]);
   const loadMoreRef = useRef<HTMLDivElement>(null);
+  const [isShuffled, setIsShuffled] = useState(false);
   
   const { 
     data: riddlesData, 
@@ -33,9 +34,21 @@ export default function Home() {
   // Update our allRiddles array when new data comes in
   useEffect(() => {
     if (riddlesData?.riddles) {
-      if (riddlesOffset === 0) {
+      // If shuffled state is active and we're not at the beginning, maintain it
+      if (isShuffled && riddlesOffset !== 0) {
+        // Only append new riddles while preserving shuffle
+        setAllRiddles(prev => {
+          // Create a Set of existing IDs to avoid duplicates
+          const existingIds = new Set(prev.map(r => r.id));
+          // Filter out any riddles that are already in our list
+          const newRiddles = riddlesData.riddles.filter(r => !existingIds.has(r.id));
+          return [...prev, ...newRiddles];
+        });
+      } else if (riddlesOffset === 0) {
         // Reset the list if we're at the beginning
         setAllRiddles(riddlesData.riddles);
+        // Reset shuffle state when we reset to the beginning
+        if (isShuffled) setIsShuffled(false);
       } else {
         // Otherwise append the new riddles
         setAllRiddles(prev => {
@@ -47,7 +60,7 @@ export default function Home() {
         });
       }
     }
-  }, [riddlesData, riddlesOffset]);
+  }, [riddlesData, riddlesOffset, isShuffled]);
   
   // Reset to top when new riddle is generated
   useEffect(() => {
@@ -102,6 +115,44 @@ export default function Home() {
     }
   };
   
+  // Handle shuffling and unshuffling
+  const shuffleRiddles = () => {
+    if (isShuffled) {
+      // If already shuffled, restore the original order
+      if (riddlesData?.riddles) {
+        setAllRiddles(riddlesData.riddles);
+      }
+      setIsShuffled(false);
+    } else {
+      // Apply Fisher-Yates shuffle algorithm
+      setAllRiddles(prevRiddles => {
+        // Create a copy of the array to avoid mutating state directly
+        const shuffled = [...prevRiddles];
+        
+        // Keep the first (newest) riddle in place
+        const startIndex = 1;
+        
+        // Fisher-Yates shuffle algorithm
+        for (let i = shuffled.length - 1; i > startIndex; i--) {
+          // Get random index between startIndex and i (inclusive)
+          const j = startIndex + Math.floor(Math.random() * (i - startIndex + 1));
+          // Swap elements at i and j
+          [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        
+        return shuffled;
+      });
+      setIsShuffled(true);
+    }
+    
+    // Show toast notification
+    toast({
+      title: isShuffled ? "Original order restored" : "Riddles shuffled",
+      description: isShuffled ? "Showing riddles in chronological order" : "Riddles have been mixed up for variety",
+      duration: 2000,
+    });
+  };
+  
   // Redirect to checkout page for paid riddle generation
   const handleGoToCheckout = () => {
     // Navigate to the checkout page
@@ -149,9 +200,32 @@ export default function Home() {
           <EmptyState />
         ) : (
           <div className="space-y-4">
-            <h2 className="text-lg font-medium text-gray-700 mb-2">
-              Riddles Collection
-            </h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-medium text-gray-700">
+                Riddles Collection
+              </h2>
+              
+              {/* Shuffle Button */}
+              {allRiddles.length > 1 && !isLoadingRiddles && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={shuffleRiddles}
+                        className={`p-2 ${isShuffled ? 'text-primary-600' : 'text-gray-500'}`}
+                      >
+                        <Shuffle size={18} />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{isShuffled ? 'Restore original order' : 'Shuffle riddles'}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
+            </div>
             
             {isLoadingRiddles ? (
               <div className="space-y-4">
