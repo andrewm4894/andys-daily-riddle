@@ -68,33 +68,39 @@ export default function RiddleCard({ riddle, isFeatured = false }: RiddleCardPro
         <div 
           className={`py-5 px-4 flex flex-col items-center gap-3 ${isFlipped ? 'hidden' : 'flex'}`}
         >
-          <div className="text-gray-800 text-base md:text-lg text-center w-full break-words relative pb-6">
+          <div className="text-gray-800 text-base md:text-lg text-center w-full break-words relative">
             {riddle.question}
           </div>
           
-          {/* Copy Button - Positioned below text */}
-          <button
-            className="flex items-center gap-1 px-2 py-1 text-xs text-gray-500 hover:text-primary-600 rounded-md transition-colors"
-            onClick={handleCopyQuestion}
-            aria-label="Copy question"
-            title="Copy question"
-          >
-            <Copy size={14} className={isCopying ? "text-green-500" : ""} />
-            <span>Copy</span>
-          </button>
-          
-          {riddle.averageRating !== null && riddle.ratingCount > 0 && (
-            <div 
-              className="text-xs text-gray-500 flex items-center justify-center gap-1" 
-              onClick={(e) => e.stopPropagation()}
-            >
-              <Star
-                size={12}
-                className="fill-yellow-400 text-yellow-400"
-              />
-              {Number(riddle.averageRating).toFixed(1)} ({riddle.ratingCount})
+          <div className="flex items-center justify-center gap-4 w-full">
+            {/* Rating display */}
+            <div className="flex-1 flex justify-end">
+              {riddle.averageRating !== null && riddle.ratingCount > 0 && (
+                <div 
+                  className="text-xs text-gray-500 flex items-center justify-center gap-1" 
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Star
+                    size={12}
+                    className="fill-yellow-400 text-yellow-400"
+                  />
+                  {Number(riddle.averageRating).toFixed(1)} ({riddle.ratingCount})
+                </div>
+              )}
             </div>
-          )}
+            
+            {/* Copy Button */}
+            <div className="flex-1 flex justify-start">
+              <button
+                className="flex items-center p-1 text-gray-400 hover:text-gray-600 rounded-full transition-colors"
+                onClick={handleCopyQuestion}
+                aria-label="Copy question"
+                title="Copy question"
+              >
+                <Copy size={14} className={isCopying ? "text-green-500" : ""} />
+              </button>
+            </div>
+          </div>
         </div>
         
         {/* Back of card - Answer */}
