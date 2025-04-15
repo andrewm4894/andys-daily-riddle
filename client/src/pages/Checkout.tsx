@@ -88,7 +88,7 @@ const CheckoutForm = () => {
         disabled={!stripe || isProcessing} 
         className="w-full"
       >
-        {isProcessing ? "Processing..." : "Generate Riddle"}
+        {isProcessing ? "Processing..." : "Generate Riddle for $1"}
       </Button>
     </form>
   );
@@ -150,7 +150,6 @@ export default function Checkout() {
           <CardTitle className="text-center">Generate a New Riddle</CardTitle>
           <CardDescription className="text-center">
             Generate a unique, AI-powered riddle.
-            <span className="inline-block mt-3 text-sm font-medium px-3 py-1 bg-primary/10 rounded-full text-primary">$1.00</span>
           </CardDescription>
         </CardHeader>
         <CardContent>
