@@ -17,6 +17,7 @@ export interface IStorage {
   countRiddles(): Promise<number>;
   createRiddle(riddle: InsertRiddle): Promise<Riddle>;
   updateRiddle(id: number, updates: Partial<Omit<Riddle, "id">>): Promise<Riddle | undefined>;
+  rateRiddle(id: number, rating: number): Promise<Riddle | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -91,6 +92,31 @@ export class DatabaseStorage implements IStorage {
       .returning();
     
     return riddle || undefined;
+  }
+
+  async rateRiddle(id: number, rating: number): Promise<Riddle | undefined> {
+    // Get current riddle to update rating
+    const currentRiddle = await this.getRiddleById(id);
+    if (!currentRiddle) {
+      return undefined;
+    }
+
+    // Calculate new values
+    const newRatingCount = currentRiddle.ratingCount + 1;
+    const newRatingSum = currentRiddle.ratingSum + rating;
+    const newAverageRating = newRatingSum / newRatingCount;
+
+    // Update the riddle with new rating values
+    const [updatedRiddle] = await db.update(riddles)
+      .set({
+        ratingCount: newRatingCount,
+        ratingSum: newRatingSum,
+        averageRating: newAverageRating
+      })
+      .where(eq(riddles.id, id))
+      .returning();
+    
+    return updatedRiddle || undefined;
   }
 }
 

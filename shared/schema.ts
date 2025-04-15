@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, real } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -23,6 +23,9 @@ export const riddles = pgTable("riddles", {
   answer: text("answer").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   isLatest: boolean("is_latest").default(true).notNull(),
+  ratingCount: integer("rating_count").default(0).notNull(),
+  ratingSum: integer("rating_sum").default(0).notNull(),
+  averageRating: real("average_rating").default(0),
 });
 
 export const insertRiddleSchema = createInsertSchema(riddles).pick({
