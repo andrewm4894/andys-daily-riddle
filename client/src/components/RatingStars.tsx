@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 
 interface RatingStarsProps {
   initialRating?: number;
-  averageRating?: number;
+  averageRating?: number | null;
   ratingCount?: number;
   readOnly?: boolean;
   onRate?: (rating: number) => void;
@@ -51,9 +51,9 @@ export default function RatingStars({
         ))}
       </div>
       
-      {averageRating !== undefined && ratingCount > 0 && (
+      {averageRating !== undefined && averageRating !== null && ratingCount > 0 && (
         <div className="text-xs text-gray-500">
-          {averageRating.toFixed(1)} ({ratingCount})
+          {Number(averageRating).toFixed(1)} ({ratingCount})
         </div>
       )}
     </div>

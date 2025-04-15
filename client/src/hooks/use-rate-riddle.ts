@@ -25,10 +25,7 @@ export function useRateRiddle() {
       queryClient.invalidateQueries({ queryKey: ["/api/riddles"] });
       queryClient.invalidateQueries({ queryKey: ["/api/riddles/latest"] });
       
-      toast({
-        title: "Rating submitted",
-        description: "Thank you for rating this riddle!",
-      });
+      // Removed toast notification as per user request
     },
     onError: (error: Error) => {
       toast({
