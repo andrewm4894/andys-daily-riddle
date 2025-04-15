@@ -57,37 +57,10 @@ export default function Home() {
     }
   };
   
-  const handleGenerateRiddle = async () => {
-    // Check if user still has riddles left for today
-    if (limitData && limitData.remaining <= 0) {
-      toast({
-        title: "Daily Limit Reached",
-        description: "You can generate up to 10 riddles per day. Try again tomorrow!",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    try {
-      // Prefetch to ensure the list refreshes with the new riddle
-      const result = await generateRiddle.mutateAsync();
-      queryClient.invalidateQueries({ queryKey: ["/api/riddles"] });
-      
-      // Show remaining count toast
-      if (result !== null && typeof result === 'number') {
-        toast({
-          title: "Riddle Generated!",
-          description: `You have ${result} riddle generation${result !== 1 ? 's' : ''} remaining today.`,
-        });
-      }
-    } catch (error) {
-      console.error("Failed to generate riddle:", error);
-      toast({
-        title: "Generation Failed",
-        description: error instanceof Error ? error.message : "Failed to generate a new riddle. Please try again.",
-        variant: "destructive"
-      });
-    }
+  // Redirect to checkout page for paid riddle generation
+  const handleGoToCheckout = () => {
+    // Navigate to the checkout page
+    setLocation('/checkout');
   };
   
   const hasRiddles = (riddlesData?.riddles.length ?? 0) > 0;
@@ -107,36 +80,18 @@ export default function Home() {
                 <TooltipTrigger asChild>
                   <div className="flex items-center">
                     <Button 
-                      onClick={handleGenerateRiddle}
-                      disabled={generateRiddle.isPending || (limitData && limitData.remaining <= 0)}
+                      onClick={handleGoToCheckout}
                       variant="default"
                       size="sm"
                       className="relative"
                     >
-                      <CircleHelp className="h-4 w-4 mr-1" />
-                      <span>Generate Riddle</span>
-                      
-                      {limitData && limitData.remaining < limitData.limit && (
-                        <span className="absolute -top-2 -right-2 bg-primary-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                          {limitData.remaining}
-                        </span>
-                      )}
+                      <CreditCard className="h-4 w-4 mr-1" />
+                      <span>Pay $1 for Riddle</span>
                     </Button>
-                    
-                    {limitData && limitData.remaining <= 0 && (
-                      <span className="ml-2 text-amber-600 flex items-center text-xs">
-                        <AlertCircle className="h-3 w-3 mr-1" />
-                        Limit reached
-                      </span>
-                    )}
                   </div>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>
-                    {limitData && limitData.remaining > 0 
-                      ? `You can generate ${limitData.remaining} more riddle${limitData.remaining !== 1 ? 's' : ''} today`
-                      : 'Daily limit reached. Try again tomorrow!'}
-                  </p>
+                  <p>Generate a new riddle for $1.00</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -165,7 +120,7 @@ export default function Home() {
               <>
                 <div className="space-y-3" ref={newRiddleRef}>
                   {/* Show loading animation when generating a new riddle */}
-                  {generateRiddle.isPending && (
+                  {false && (
                     <div className="mb-6 transform transition-all duration-300 ease-in-out">
                       <LoadingAnimation />
                     </div>
