@@ -3,7 +3,6 @@ import { type Riddle } from "@shared/schema";
 import RatingStars from "./RatingStars";
 import { useRateRiddle } from "@/hooks/use-rate-riddle";
 import { Star, Copy } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
 
 type RiddleCardProps = {
   riddle: Riddle;
@@ -14,7 +13,6 @@ export default function RiddleCard({ riddle, isFeatured = false }: RiddleCardPro
   const [isFlipped, setIsFlipped] = useState(false);
   const [isCopying, setIsCopying] = useState(false);
   const { mutate: rateRiddle } = useRateRiddle();
-  const { toast } = useToast();
 
   const handleFlip = () => {
     setIsFlipped(!isFlipped);
@@ -32,25 +30,14 @@ export default function RiddleCard({ riddle, isFeatured = false }: RiddleCardPro
     navigator.clipboard.writeText(riddle.question)
       .then(() => {
         setIsCopying(true);
-        toast({
-          title: "Copied to clipboard",
-          description: "The riddle has been copied to your clipboard",
-          duration: 2000,
-        });
         
-        // Reset the copy icon after a short delay
+        // Reset the copy icon after a short delay - this provides visual feedback
         setTimeout(() => {
           setIsCopying(false);
         }, 1000);
       })
       .catch(err => {
         console.error('Failed to copy text: ', err);
-        toast({
-          title: "Copy failed",
-          description: "Could not copy to clipboard. Please try again.",
-          variant: "destructive",
-          duration: 2000,
-        });
       });
   };
 
@@ -73,24 +60,36 @@ export default function RiddleCard({ riddle, isFeatured = false }: RiddleCardPro
           </div>
           
           <div className="flex items-center justify-center gap-4 w-full">
-            {/* Rating display */}
-            <div className="flex-1 flex justify-end">
-              {riddle.averageRating !== null && riddle.ratingCount > 0 && (
-                <div 
-                  className="text-xs text-gray-500 flex items-center justify-center gap-1" 
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <Star
-                    size={12}
-                    className="fill-yellow-400 text-yellow-400"
-                  />
-                  {Number(riddle.averageRating).toFixed(1)} ({riddle.ratingCount})
+            {riddle.averageRating !== null && riddle.ratingCount > 0 ? (
+              <>
+                {/* Rating display */}
+                <div className="flex-1 flex justify-end">
+                  <div 
+                    className="text-xs text-gray-500 flex items-center justify-center gap-1" 
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <Star
+                      size={12}
+                      className="fill-yellow-400 text-yellow-400"
+                    />
+                    {Number(riddle.averageRating).toFixed(1)} ({riddle.ratingCount})
+                  </div>
                 </div>
-              )}
-            </div>
-            
-            {/* Copy Button */}
-            <div className="flex-1 flex justify-start">
+                
+                {/* Copy Button when ratings exist */}
+                <div className="flex-1 flex justify-start">
+                  <button
+                    className="flex items-center p-1 text-gray-400 hover:text-gray-600 rounded-full transition-colors"
+                    onClick={handleCopyQuestion}
+                    aria-label="Copy question"
+                    title="Copy question"
+                  >
+                    <Copy size={14} className={isCopying ? "text-green-500" : ""} />
+                  </button>
+                </div>
+              </>
+            ) : (
+              /* Centered copy button when no ratings */
               <button
                 className="flex items-center p-1 text-gray-400 hover:text-gray-600 rounded-full transition-colors"
                 onClick={handleCopyQuestion}
@@ -99,7 +98,7 @@ export default function RiddleCard({ riddle, isFeatured = false }: RiddleCardPro
               >
                 <Copy size={14} className={isCopying ? "text-green-500" : ""} />
               </button>
-            </div>
+            )}
           </div>
         </div>
         
