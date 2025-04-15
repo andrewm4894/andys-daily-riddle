@@ -2,6 +2,7 @@ import { useState } from "react";
 import { type Riddle } from "@shared/schema";
 import RatingStars from "./RatingStars";
 import { useRateRiddle } from "@/hooks/use-rate-riddle";
+import { usePostHog } from "@/hooks/use-posthog";
 import { Star, Copy } from "lucide-react";
 
 type RiddleCardProps = {
@@ -13,18 +14,40 @@ export default function RiddleCard({ riddle, isFeatured = false }: RiddleCardPro
   const [isFlipped, setIsFlipped] = useState(false);
   const [isCopying, setIsCopying] = useState(false);
   const { mutate: rateRiddle } = useRateRiddle();
+  const { captureEvent } = usePostHog();
 
   const handleFlip = () => {
-    setIsFlipped(!isFlipped);
+    const newState = !isFlipped;
+    setIsFlipped(newState);
+    
+    // Track card flip events
+    captureEvent(newState ? 'riddle_card_flipped' : 'riddle_card_unflipped', {
+      riddle_id: riddle.id,
+      is_featured: isFeatured,
+      has_rating: riddle.averageRating !== null
+    });
   };
 
   const handleRate = (rating: number) => {
     // Rating is handled by the RatingStars component (stopPropagation applied there)
     rateRiddle({ riddleId: riddle.id, rating });
+    
+    // Track rating events
+    captureEvent('riddle_rated', {
+      riddle_id: riddle.id,
+      rating: rating,
+      is_featured: isFeatured
+    });
   };
   
   const handleCopyQuestion = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent card from flipping
+    
+    // Track copy events
+    captureEvent('riddle_question_copied', {
+      riddle_id: riddle.id,
+      is_featured: isFeatured
+    });
     
     // Copy the riddle question to clipboard
     navigator.clipboard.writeText(riddle.question)
@@ -38,6 +61,12 @@ export default function RiddleCard({ riddle, isFeatured = false }: RiddleCardPro
       })
       .catch(err => {
         console.error('Failed to copy text: ', err);
+        
+        // Track copy failure events
+        captureEvent('riddle_copy_failed', {
+          riddle_id: riddle.id,
+          error: err.message
+        });
       });
   };
 

@@ -1,6 +1,7 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { type Riddle } from "@shared/schema";
+import { usePostHog } from "@/hooks/use-posthog";
 
 export function useLatestRiddle() {
   return useQuery<Riddle>({
@@ -54,11 +55,22 @@ export function useRiddleLimit() {
 }
 
 export function useGenerateRiddle() {
+  const { captureEvent } = usePostHog();
+  
   const mutation = useMutation({
     mutationFn: async () => {
+      // Track the attempt to generate a riddle
+      captureEvent('riddle_generation_started');
+      
       const response = await apiRequest("POST", "/api/riddles/generate");
       if (response.status === 429) {
         const error = await response.json();
+        
+        // Track rate limit hit
+        captureEvent('riddle_generation_rate_limited', {
+          error: error.message
+        });
+        
         throw new Error(error.message);
       }
       return response.json();
@@ -69,9 +81,21 @@ export function useGenerateRiddle() {
       queryClient.invalidateQueries({ queryKey: ["/api/riddles"] });
       queryClient.invalidateQueries({ queryKey: ["/api/riddles/limit"] });
       
+      // Track successful riddle generation
+      captureEvent('riddle_generation_success', {
+        riddle_id: data.id,
+        remaining_today: data.remainingToday
+      });
+      
       // Return the remaining count from the response if it exists
       return data.remainingToday !== undefined ? data.remainingToday : null;
     },
+    onError: (error: Error) => {
+      // Track riddle generation errors
+      captureEvent('riddle_generation_error', {
+        error: error.message
+      });
+    }
   });
 
   return mutation;

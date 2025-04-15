@@ -131,6 +131,11 @@ export default function Home() {
       // If already shuffled, restore the original order from the server data
       setAllRiddles(totalRiddles.sort((a, b) => b.id - a.id)); // Sort by ID descending (newest first)
       setIsShuffled(false);
+      
+      // Track unshuffle event
+      captureEvent('riddles_unshuffle', {
+        riddle_count: totalRiddles.length
+      });
     } else {
       // Apply Fisher-Yates shuffle algorithm
       const shuffled = [...totalRiddles];
@@ -148,11 +153,21 @@ export default function Home() {
       
       setAllRiddles(shuffled);
       setIsShuffled(true);
+      
+      // Track shuffle event
+      captureEvent('riddles_shuffle', {
+        riddle_count: totalRiddles.length
+      });
     }
   };
   
   // Redirect to checkout page for paid riddle generation
   const handleGoToCheckout = () => {
+    // Track checkout event
+    captureEvent('checkout_started', {
+      from_page: 'home'
+    });
+    
     // Navigate to the checkout page
     setLocation('/checkout');
   };
