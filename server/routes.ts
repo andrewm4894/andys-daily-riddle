@@ -5,6 +5,14 @@ import { createDailyRiddle, getLatestRiddle, getRiddles, getRiddleCount } from "
 import { startRiddleScheduler } from "./scheduler";
 import { rateLimiter } from "./services/rateLimiter";
 import { z } from "zod";
+import Stripe from "stripe";
+
+// Initialize Stripe with the secret key
+if (!process.env.STRIPE_SECRET_KEY) {
+  throw new Error("Missing required Stripe secret: STRIPE_SECRET_KEY");
+}
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Start the scheduler to generate daily riddles
@@ -71,6 +79,73 @@ export async function registerRoutes(app: Express): Promise<Server> {
       limit: 10,
       canGenerate: remaining > 0
     });
+  });
+  
+  // Stripe payment endpoint - create a payment intent for riddle generation
+  app.post("/api/create-payment-intent", async (req: Request, res: Response) => {
+    try {
+      // Create a payment intent for $1.00 USD
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: 100, // Amount in cents ($1.00)
+        currency: "usd",
+        // Add metadata for tracking
+        metadata: {
+          service: "riddle_generation",
+        },
+      });
+
+      // Return the client secret to the client
+      res.json({ clientSecret: paymentIntent.client_secret });
+    } catch (error: any) {
+      console.error("Error creating payment intent:", error);
+      res.status(500).json({ 
+        message: "Failed to create payment intent", 
+        error: error.message 
+      });
+    }
+  });
+  
+  // Payment verification endpoint that generates a riddle upon successful payment
+  app.post("/api/generate-paid-riddle", async (req: Request, res: Response) => {
+    try {
+      const { paymentIntentId } = req.body;
+
+      if (!paymentIntentId) {
+        return res.status(400).json({ message: "Payment intent ID is required" });
+      }
+
+      // Verify the payment status
+      const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+
+      // Check if payment was successful
+      if (paymentIntent.status !== "succeeded") {
+        return res.status(400).json({ 
+          message: "Payment has not been completed", 
+          status: paymentIntent.status 
+        });
+      }
+
+      // Generate a new riddle - using the same function used for daily riddles
+      const result = await createDailyRiddle();
+      
+      if (!result.success) {
+        return res.status(500).json({ 
+          message: "Failed to generate riddle after payment",
+          error: result.error
+        });
+      }
+      
+      // Get the newly created riddle
+      const newRiddle = await getLatestRiddle();
+      
+      return res.status(201).json(newRiddle);
+    } catch (error: any) {
+      console.error("Error generating paid riddle:", error);
+      return res.status(500).json({ 
+        message: "Failed to generate riddle after payment", 
+        error: error.message 
+      });
+    }
   });
 
   // Manually generate a new riddle with rate limiting
